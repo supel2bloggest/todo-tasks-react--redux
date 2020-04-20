@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import { 
@@ -19,12 +19,6 @@ import actions from './store/actions';
 import Header from './components/Header';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
   paper: {
     padding: '2px 4px',
     display: 'flex',
@@ -41,11 +35,19 @@ const useStyles = makeStyles((theme) => ({
     padding: 10,
   },
   divider: {
-    height: 28,
+    height: 38,
     margin: 4,
   },
   text_center: {
     textAlign: 'center'
+  },
+  titleContainer: {
+    textAlign: 'center',
+    marginTop: 30,
+    marginBottom: 30
+  },
+  listItem: {
+    borderBottom: '1 solid #ccc',
   }
 }));
 
@@ -55,7 +57,7 @@ function Alert(props) {
 
 function App(props) {
   const classes = useStyles();
-  const { loading, open_snack, tasks, onAddTask, onRemoveTask } = props;
+  const { loading, open_snack, tasks, onAddTask, onRemoveTask, fetchTasks } = props;
   const [ taskText, setTaskText ] = useState('');
 
   const onSubmit = (e) => {
@@ -64,16 +66,19 @@ function App(props) {
     taskText && onAddTask({ id: (Math.random() + (tasks.length + 1)), name: taskText })
   }
 
+  useEffect(() => {
+    fetchTasks()
+  }, [fetchTasks]);
+
   return (
     <>
     <CssBaseline />
     <Header />
     <Container>
-      <Typography variant="h4" className={classes.text_center} >
+      <Typography variant="h4" className={classes.titleContainer} >
         Tasks
       </Typography>
-      <form onSubmit={onSubmit}>
-        <Paper component="form" className={classes.paper}>
+      <Paper component="form" className={classes.paper} onSubmit={onSubmit}>
           <InputBase
             className={classes.input}
             placeholder="Input your todo tasks."
@@ -85,13 +90,12 @@ function App(props) {
           <IconButton type="submit" color="primary" className={classes.iconButton} aria-label="directions" >
             <AddIcon />
           </IconButton>
-        </Paper>
-      </form>
+      </Paper>
       <List>
         {
         tasks.length > 0 ? (tasks.map((value, i) => {
         return (
-            <ListItem key={i}>
+            <ListItem key={i} className={classes.listItem}>
               <ListItemAvatar>
                 <Avatar>
                   <TimerIcon />
@@ -143,6 +147,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
+    fetchTasks: () => dispatch(actions.ACTION_TASK.taskFromLocalStorage()),
     onAddTask: (task) => dispatch(actions.ACTION_TASK.addTask(task)),
     onRemoveTask: (id) => dispatch(actions.ACTION_TASK.removeTask(id))
   }
